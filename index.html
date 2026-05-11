@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop Administration - ERP Profissional</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-bg"></div>
+    <div class="login-overlay"></div>
+    <div class="login-container">
+      <div class="login-logo">
+        <i class="fas fa-store"></i>
+        <h1>Shop Administration</h1>
+        <p>ERP Profissional Integrado</p>
+      </div>
+      <form id="login-form" class="login-form">
+        <div class="form-group">
+          <label><i class="fas fa-envelope"></i> Email</label>
+          <input type="email" id="login-email" placeholder="seu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-lock"></i> Senha</label>
+          <input type="password" id="login-password" placeholder="Sua senha" required>
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-user-tag"></i> Perfil</label>
+          <select id="login-role">
+            <option value="admin">Administrador</option>
+            <option value="manager">Gestor Junior</option>
+            <option value="cashier">Operador de Caixa</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-login">
+          <i class="fas fa-sign-in-alt"></i> Entrar no Sistema
+        </button>
+      </form>
+      <div class="login-footer">
+        <p id="login-status"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="app hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand">
+        <i class="fas fa-store"></i>
+        <span>Shop Administration</span>
+        <button id="sidebar-toggle" class="sidebar-toggle"><i class="fas fa-bars"></i></button>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <span class="nav-title">Principal</span>
+          <a href="#dashboard" class="nav-link active" data-page="dashboard">
+            <i class="fas fa-th-large"></i><span>Dashboard</span>
+          </a>
+          <a href="#vendas" class="nav-link" data-page="vendas">
+            <i class="fas fa-cash-register"></i><span>Vendas</span>
+          </a>
+          <a href="#produtos" class="nav-link" data-page="produtos">
+            <i class="fas fa-boxes"></i><span>Produtos</span>
+          </a>
+        </div>
+        <div class="nav-section">
+          <span class="nav-title">Gestão de Stock</span>
+          <a href="#armazem" class="nav-link" data-page="armazem">
+            <i class="fas fa-warehouse"></i><span>Armazém</span>
+          </a>
+          <a href="#loja" class="nav-link" data-page="loja">
+            <i class="fas fa-store-alt"></i><span>Loja</span>
+          </a>
+          <a href="#inventario" class="nav-link" data-page="inventario">
+            <i class="fas fa-clipboard-list"></i><span>Inventário</span>
+          </a>
+        </div>
+        <div class="nav-section">
+          <span class="nav-title">Combustível</span>
+          <a href="#combustivel" class="nav-link" data-page="combustivel">
+            <i class="fas fa-gas-pump"></i><span>Bombas de Combustível</span>
+          </a>
+        </div>
+        <div class="nav-section">
+          <span class="nav-title">Financeiro</span>
+          <a href="#caixa" class="nav-link" data-page="caixa">
+            <i class="fas fa-coins"></i><span>Fluxo de Caixa</span>
+          </a>
+          <a href="#reconciliacao" class="nav-link" data-page="reconciliacao">
+            <i class="fas fa-balance-scale"></i><span>Reconciliação</span>
+          </a>
+        </div>
+        <div class="nav-section">
+          <span class="nav-title">Operações</span>
+          <a href="#perdas" class="nav-link" data-page="perdas">
+            <i class="fas fa-exclamation-triangle"></i><span>Perdas</span>
+          </a>
+          <a href="#roubos" class="nav-link" data-page="roubos">
+            <i class="fas fa-shield-alt"></i><span>Roubos</span>
+          </a>
+          <a href="#transferencias" class="nav-link" data-page="transferencias">
+            <i class="fas fa-exchange-alt"></i><span>Transferências</span>
+          </a>
+        </div>
+        <div class="nav-section admin-only">
+          <span class="nav-title">Relatórios</span>
+          <a href="#relatorios" class="nav-link" data-page="relatorios">
+            <i class="fas fa-chart-bar"></i><span>Relatórios Inteligentes</span>
+          </a>
+        </div>
+        <div class="nav-section">
+          <span class="nav-title">Sistema</span>
+          <a href="#fechamento" class="nav-link" data-page="fechamento">
+            <i class="fas fa-calendar-check"></i><span>Fechamento do Dia</span>
+          </a>
+          <a href="#configuracoes" class="nav-link" data-page="configuracoes">
+            <i class="fas fa-cog"></i><span>Configurações</span>
+          </a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <i class="fas fa-user-circle"></i>
+          <div>
+            <span id="user-name">Administrador</span>
+            <small id="user-role">Admin</small>
+          </div>
+        </div>
+        <button id="btn-logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </aside>
+
+    <!-- Overlay for mobile -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <button id="mobile-menu-btn" class="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+          <h2 id="page-title">Dashboard</h2>
+        </div>
+        <div class="header-center">
+          <div class="sync-status" id="sync-status">
+            <i class="fas fa-wifi"></i><span>Online</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="header-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="global-search" placeholder="Pesquisar produto, código...">
+          </div>
+          <button class="header-btn" id="btn-notifications">
+            <i class="fas fa-bell"></i>
+            <span class="badge" id="notif-badge">0</span>
+          </button>
+          <button class="header-btn" id="btn-day-status" title="Estado do Dia">
+            <i class="fas fa-sun"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Pages -->
+      <div class="content">
+        <!-- Dashboard -->
+        <div id="page-dashboard" class="page active">
+          <div class="page-header">
+            <h1>Dashboard Inteligente</h1>
+            <p>Visão geral do seu negócio em tempo real</p>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi-card animated">
+              <div class="kpi-icon bg-blue"><i class="fas fa-cash-register"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Vendas do Dia</span>
+                <span class="kpi-value" id="kpi-vendas">MT 0,00</span>
+                <span class="kpi-change positive"><i class="fas fa-arrow-up"></i> <span id="kpi-vendas-change">0%</span></span>
+              </div>
+            </div>
+            <div class="kpi-card animated">
+              <div class="kpi-icon bg-gold"><i class="fas fa-coins"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Caixa Atual</span>
+                <span class="kpi-value" id="kpi-caixa">MT 0,00</span>
+                <span class="kpi-change" id="kpi-caixa-status"><i class="fas fa-circle"></i> Aberto</span>
+              </div>
+            </div>
+            <div class="kpi-card animated">
+              <div class="kpi-icon bg-green"><i class="fas fa-gas-pump"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Combustível</span>
+                <span class="kpi-value" id="kpi-combustivel">0 L</span>
+                <span class="kpi-change" id="kpi-combustivel-status"><i class="fas fa-check"></i> Normal</span>
+              </div>
+            </div>
+            <div class="kpi-card animated">
+              <div class="kpi-icon bg-red"><i class="fas fa-box"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Estoque Baixo</span>
+                <span class="kpi-value" id="kpi-estoque-baixo">0</span>
+                <span class="kpi-change negative"><i class="fas fa-exclamation"></i> produtos</span>
+              </div>
+            </div>
+            <div class="kpi-card animated">
+              <div class="kpi-icon bg-purple"><i class="fas fa-clipboard-list"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Inventário Hoje</span>
+                <span class="kpi-value" id="kpi-inventario">0</span>
+                <span class="kpi-change"><i class="fas fa-sync"></i> movimentações</span>
+              </div>
+            </div>
+            <div class="kpi-card animated">
+              <div class="kpi-icon bg-orange"><i class="fas fa-exclamation-triangle"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Perdas/Roubos</span>
+                <span class="kpi-value" id="kpi-perdas">0</span>
+                <span class="kpi-change negative" id="kpi-perdas-valor">MT 0,00</span>
+              </div>
+            </div>
+          </div>
+          <div class="dashboard-grid">
+            <div class="card chart-card">
+              <div class="card-header">
+                <h3><i class="fas fa-chart-line"></i> Vendas dos Últimos 7 Dias</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="chart-vendas"></canvas>
+              </div>
+            </div>
+            <div class="card chart-card">
+              <div class="card-header">
+                <h3><i class="fas fa-chart-pie"></i> Vendas por Categoria</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="chart-categorias"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="dashboard-grid">
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fas fa-box"></i> Produtos com Estoque Baixo</h3>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="data-table" id="table-estoque-baixo">
+                    <thead><tr><th>Produto</th><th>Código</th><th>Qtd</th><th>Mínimo</th><th>Status</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fas fa-clock"></i> Movimentações Recentes</h3>
+              </div>
+              <div class="card-body">
+                <div class="activity-list" id="activity-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vendas -->
+        <div id="page-vendas" class="page">
+          <div class="page-header">
+            <h1>Sistema de Vendas</h1>
+            <p>Registre vendas, aplique descontos e acompanhe lucros</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-nova-venda"><i class="fas fa-plus"></i> Nova Venda</button>
+            <button class="btn btn-secondary" id="btn-importar-vendas"><i class="fas fa-upload"></i> Importar</button>
+            <button class="btn btn-secondary" id="btn-exportar-vendas"><i class="fas fa-download"></i> Exportar</button>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-list"></i> Histórico de Vendas</h3>
+              <div class="card-filters">
+                <input type="date" id="vendas-data-inicio" class="form-input">
+                <input type="date" id="vendas-data-fim" class="form-input">
+                <button class="btn btn-sm" id="btn-filtrar-vendas"><i class="fas fa-filter"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-vendas">
+                  <thead>
+                    <tr>
+                      <th>ID</th><th>Data</th><th>Produtos</th><th>Subtotal</th><th>Desconto</th><th>Total</th><th>Lucro</th><th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Produtos -->
+        <div id="page-produtos" class="page">
+          <div class="page-header">
+            <h1>Gestão de Produtos</h1>
+            <p>Cadastre, edite e controle todos os produtos</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-novo-produto"><i class="fas fa-plus"></i> Novo Produto</button>
+            <button class="btn btn-secondary" id="btn-importar-produtos"><i class="fas fa-upload"></i> Importar</button>
+            <button class="btn btn-secondary" id="btn-exportar-produtos"><i class="fas fa-download"></i> Exportar</button>
+            <button class="btn btn-secondary" id="btn-categorias"><i class="fas fa-tags"></i> Categorias</button>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-boxes"></i> Lista de Produtos</h3>
+              <div class="card-filters">
+                <input type="text" id="filtro-produto" class="form-input" placeholder="Pesquisar produto...">
+                <select id="filtro-categoria" class="form-input"><option value="">Todas Categorias</option></select>
+                <button class="btn btn-sm" id="btn-filtrar-produtos"><i class="fas fa-filter"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-produtos">
+                  <thead>
+                    <tr>
+                      <th>Código</th><th>Nome</th><th>Categoria</th><th>Preço Compra</th><th>Preço Venda</th><th>Margem</th><th>Qtd</th><th>Unidade</th><th>Status</th><th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Armazém -->
+        <div id="page-armazem" class="page">
+          <div class="page-header">
+            <h1>Gestão de Armazém</h1>
+            <p>Controle de entradas, saldo e movimentações do armazém</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-add-stock"><i class="fas fa-plus"></i> Adicionar Stock</button>
+            <button class="btn btn-secondary" id="btn-historico-armazem"><i class="fas fa-history"></i> Histórico</button>
+            <button class="btn btn-secondary" id="btn-exportar-armazem"><i class="fas fa-download"></i> Exportar</button>
+          </div>
+          <div class="kpi-grid three">
+            <div class="kpi-card">
+              <div class="kpi-icon bg-blue"><i class="fas fa-warehouse"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Total em Armazém</span>
+                <span class="kpi-value" id="kpi-total-armazem">MT 0,00</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon bg-green"><i class="fas fa-box"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Produtos</span>
+                <span class="kpi-value" id="kpi-produtos-armazem">0</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon bg-gold"><i class="fas fa-exchange-alt"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Entradas Hoje</span>
+                <span class="kpi-value" id="kpi-entradas-hoje">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-warehouse"></i> Stock em Armazém</h3>
+              <div class="card-filters">
+                <input type="text" id="filtro-armazem" class="form-input" placeholder="Pesquisar...">
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-armazem">
+                  <thead>
+                    <tr>
+                      <th>Produto</th><th>Código</th><th>Qtd Armazém</th><th>Qtd Loja</th><th>Total</th><th>Custo</th><th>Valor Total</th><th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loja -->
+        <div id="page-loja" class="page">
+          <div class="page-header">
+            <h1>Gestão de Loja</h1>
+            <p>Produtos disponíveis para venda e transferências</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-nova-venda-loja"><i class="fas fa-cash-register"></i> Nova Venda</button>
+            <button class="btn btn-secondary" id="btn-transferir-armazem"><i class="fas fa-exchange-alt"></i> Do Armazém</button>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-store-alt"></i> Produtos na Loja</h3>
+              <div class="card-filters">
+                <input type="text" id="filtro-loja" class="form-input" placeholder="Pesquisar...">
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-loja">
+                  <thead>
+                    <tr>
+                      <th>Produto</th><th>Código</th><th>Qtd Loja</th><th>Preço Venda</th><th>Disponível</th><th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventário -->
+        <div id="page-inventario" class="page">
+          <div class="page-header">
+            <h1>Inventário Inteligente</h1>
+            <p>Controle automático e em tempo real do inventário</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-inventario-fisico"><i class="fas fa-clipboard-check"></i> Realizar Inventário Físico</button>
+            <button class="btn btn-secondary" id="btn-exportar-inventario"><i class="fas fa-download"></i> Exportar</button>
+          </div>
+          <div class="kpi-grid three">
+            <div class="kpi-card">
+              <div class="kpi-icon bg-blue"><i class="fas fa-cubes"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Valor Total em Stock</span>
+                <span class="kpi-value" id="kpi-valor-total">MT 0,00</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon bg-green"><i class="fas fa-chart-line"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Custo Médio</span>
+                <span class="kpi-value" id="kpi-custo-medio">MT 0,00</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon bg-purple"><i class="fas fa-sync"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Total Movimentações</span>
+                <span class="kpi-value" id="kpi-total-mov">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-list"></i> Inventário em Tempo Real</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-inventario">
+                  <thead>
+                    <tr>
+                      <th>Produto</th><th>Código</th><th>Qtd</th><th>Valor Unit</th><th>Valor Total</th><th>Vendido</th><th>Perdas</th><th>Roubos</th><th>Saldo Mín</th><th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-history"></i> Histórico de Movimentações</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-movimentacoes">
+                  <thead>
+                    <tr>
+                      <th>Data/Hora</th><th>Utilizador</th><th>Tipo</th><th>Produto</th><th>Qtd</th><th>Saldo Ant</th><th>Saldo Atual</th><th>Observação</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Combustível -->
+        <div id="page-combustivel" class="page">
+          <div class="page-header">
+            <h1>Gestão de Combustível</h1>
+            <p>Controle de bombas, abastecimentos e reconciliação</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-novo-abastecimento"><i class="fas fa-plus"></i> Novo Abastecimento</button>
+            <button class="btn btn-primary" id="btn-add-combustivel"><i class="fas fa-oil-can"></i> Entrada de Combustível</button>
+            <button class="btn btn-secondary" id="btn-exportar-combustivel"><i class="fas fa-download"></i> Exportar</button>
+          </div>
+          <div class="kpi-grid four">
+            <div class="kpi-card">
+              <div class="kpi-icon bg-orange"><i class="fas fa-gas-pump"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Gasolina</span>
+                <span class="kpi-value" id="kpi-gasolina">0 L</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon bg-blue"><i class="fas fa-gas-pump"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Gasóleo</span>
+                <span class="kpi-value" id="kpi-gasoleo">0 L</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon bg-green"><i class="fas fa-gas-pump"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Total Vendas</span>
+                <span class="kpi-value" id="kpi-vendas-comb">MT 0,00</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon bg-red"><i class="fas fa-exclamation"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Alertas</span>
+                <span class="kpi-value" id="kpi-alertas-comb">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-gas-pump"></i> Bombas de Combustível</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-bombas">
+                  <thead>
+                    <tr>
+                      <th>Bomba</th><th>Tipo</th><th>Saldo Atual</th><th>Último Abast.</th><th>Total Vendido</th><th>Status</th><th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-list"></i> Movimentações de Combustível</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-mov-comb">
+                  <thead>
+                    <tr>
+                      <th>Data</th><th>Tipo</th><th>Bomba</th><th>Litros</th><th>Valor</th><th>Observação</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Caixa -->
+        <div id="page-caixa" class="page">
+          <div class="page-header">
+            <h1>Fluxo de Caixa</h1>
+            <p>Controle financeiro, entradas, saídas e saldo</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-abrir-caixa"><i class="fas fa-lock-open"></i> Abrir Caixa</button>
+            <button class="btn btn-primary" id="btn-movimento-caixa"><i class="fas fa-plus"></i> Movimento</button>
+            <button class="btn btn-secondary" id="btn-exportar-caixa"><i class="fas fa-download"></i> Exportar</button>
+          </div>
+          <div class="kpi-grid three">
+            <div class="kpi-card">
+              <div class="kpi-icon bg-green"><i class="fas fa-arrow-down"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Entradas</span>
+                <span class="kpi-value" id="kpi-entradas-caixa">MT 0,00</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon bg-red"><i class="fas fa-arrow-up"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Saídas</span>
+                <span class="kpi-value" id="kpi-saidas-caixa">MT 0,00</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon bg-gold"><i class="fas fa-balance-scale"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-label">Saldo</span>
+                <span class="kpi-value" id="kpi-saldo-caixa">MT 0,00</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-list"></i> Movimentações do Caixa</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-caixa">
+                  <thead>
+                    <tr>
+                      <th>Data/Hora</th><th>Tipo</th><th>Descrição</th><th>Entrada</th><th>Saída</th><th>Saldo</th><th>Utilizador</th><th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reconciliação -->
+        <div id="page-reconciliacao" class="page">
+          <div class="page-header">
+            <h1>Reconciliação Inteligente</h1>
+            <p>Reconcilie vendas, estoque, perdas e roubos automaticamente</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary btn-lg" id="btn-reconciliar-sistema"><i class="fas fa-sync-alt"></i> Reconciliar Sistema</button>
+          </div>
+          <div id="reconciliacao-result" class="hidden">
+            <div class="card status-card">
+              <div class="card-body" id="reconciliacao-status"></div>
+            </div>
+            <div class="dashboard-grid">
+              <div class="card">
+                <div class="card-header"><h3><i class="fas fa-store"></i> Loja</h3></div>
+                <div class="card-body" id="reconc-loja"></div>
+              </div>
+              <div class="card">
+                <div class="card-header"><h3><i class="fas fa-warehouse"></i> Armazém</h3></div>
+                <div class="card-body" id="reconc-armazem"></div>
+              </div>
+              <div class="card">
+                <div class="card-header"><h3><i class="fas fa-exclamation-triangle"></i> Perdas</h3></div>
+                <div class="card-body" id="reconc-perdas"></div>
+              </div>
+              <div class="card">
+                <div class="card-header"><h3><i class="fas fa-shield-alt"></i> Roubos</h3></div>
+                <div class="card-body" id="reconc-roubos"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3><i class="fas fa-chart-pie"></i> Resumo da Reconciliação</h3></div>
+              <div class="card-body" id="reconc-resumo"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Perdas -->
+        <div id="page-perdas" class="page">
+          <div class="page-header">
+            <h1>Gestão de Perdas</h1>
+            <p>Registre e controle perdas de produtos</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-registrar-perda"><i class="fas fa-plus"></i> Registrar Perda</button>
+            <button class="btn btn-secondary" id="btn-exportar-perdas"><i class="fas fa-download"></i> Exportar</button>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-list"></i> Registro de Perdas</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-perdas">
+                  <thead>
+                    <tr>
+                      <th>Data</th><th>Produto</th><th>Qtd</th><th>Valor</th><th>Motivo</th><th>Local</th><th>Utilizador</th><th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Roubos -->
+        <div id="page-roubos" class="page">
+          <div class="page-header">
+            <h1>Gestão de Roubos</h1>
+            <p>Registre e controle roubos de produtos</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-registrar-roubo"><i class="fas fa-plus"></i> Registrar Roubo</button>
+            <button class="btn btn-secondary" id="btn-exportar-roubos"><i class="fas fa-download"></i> Exportar</button>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-list"></i> Registro de Roubos</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-roubos">
+                  <thead>
+                    <tr>
+                      <th>Data</th><th>Produto</th><th>Qtd</th><th>Valor</th><th>Descrição</th><th>Local</th><th>Utilizador</th><th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transferências -->
+        <div id="page-transferencias" class="page">
+          <div class="page-header">
+            <h1>Transferências</h1>
+            <p>Transferências automáticas entre armazém e loja</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" id="btn-nova-transferencia"><i class="fas fa-exchange-alt"></i> Nova Transferência</button>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-list"></i> Histórico de Transferências</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="data-table" id="table-transferencias">
+                  <thead>
+                    <tr>
+                      <th>Data</th><th>Produto</th><th>De</th><th>Para</th><th>Qtd</th><th>Utilizador</th><th>Status</th><th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Relatórios -->
+        <div id="page-relatorios" class="page">
+          <div class="page-header">
+            <h1>Relatórios Inteligentes</h1>
+            <p>Gere relatórios completos e exportáveis</p>
+          </div>
+          <div class="report-grid">
+            <div class="report-card" data-report="vendas">
+              <i class="fas fa-cash-register"></i>
+              <h3>Relatório de Vendas</h3>
+              <p>Vendas por período, produto e categoria</p>
+            </div>
+            <div class="report-card" data-report="estoque">
+              <i class="fas fa-boxes"></i>
+              <h3>Relatório de Estoque</h3>
+              <p>Posição de estoque, movimentações e saldos</p>
+            </div>
+            <div class="report-card" data-report="inventario">
+              <i class="fas fa-clipboard-list"></i>
+              <h3>Relatório de Inventário</h3>
+              <p>Inventário detalhado com divergências</p>
+            </div>
+            <div class="report-card" data-report="perdas">
+              <i class="fas fa-exclamation-triangle"></i>
+              <h3>Relatório de Perdas</h3>
+              <p>Perdas por período, produto e motivo</p>
+            </div>
+            <div class="report-card" data-report="roubos">
+              <i class="fas fa-shield-alt"></i>
+              <h3>Relatório de Roubos</h3>
+              <p>Roubos registrados com detalhes</p>
+            </div>
+            <div class="report-card" data-report="combustivel">
+              <i class="fas fa-gas-pump"></i>
+              <h3>Relatório de Combustível</h3>
+              <p>Abastecimentos, vendas e saldo</p>
+            </div>
+            <div class="report-card" data-report="caixa">
+              <i class="fas fa-coins"></i>
+              <h3>Relatório de Caixa</h3>
+              <p>Movimentações e saldo do caixa</p>
+            </div>
+            <div class="report-card" data-report="lucro">
+              <i class="fas fa-chart-line"></i>
+              <h3>Relatório de Lucro</h3>
+              <p>Análise de lucratividade</p>
+            </div>
+            <div class="report-card" data-report="reconciliacao">
+              <i class="fas fa-balance-scale"></i>
+              <h3>Relatório de Reconciliação</h3>
+              <p>Resumo de reconciliações</p>
+            </div>
+          </div>
+          <div id="report-viewer" class="hidden">
+            <div class="card">
+              <div class="card-header">
+                <h3 id="report-title">Relatório</h3>
+                <div class="card-filters">
+                  <input type="date" id="report-data-inicio" class="form-input">
+                  <input type="date" id="report-data-fim" class="form-input">
+                  <button class="btn btn-primary" id="btn-gerar-relatorio"><i class="fas fa-play"></i> Gerar</button>
+                  <button class="btn btn-secondary" id="btn-exportar-relatorio"><i class="fas fa-download"></i> Exportar</button>
+                  <select id="report-export-format" class="form-input">
+                    <option value="pdf">PDF</option>
+                    <option value="xlsx">XLSX</option>
+                    <option value="csv">CSV</option>
+                    <option value="json">JSON</option>
+                    <option value="docx">DOCX</option>
+                    <option value="xml">XML</option>
+                  </select>
+                </div>
+              </div>
+              <div class="card-body" id="report-content"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fechamento -->
+        <div id="page-fechamento" class="page">
+          <div class="page-header">
+            <h1>Fechamento do Dia</h1>
+            <p>Finalize as operações do dia e gere relatório diário</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary btn-lg" id="btn-fechar-dia"><i class="fas fa-calendar-check"></i> Fechar Dia</button>
+            <button class="btn btn-secondary" id="btn-iniciar-novo-dia"><i class="fas fa-sun"></i> Iniciar Novo Dia</button>
+            <button class="btn btn-secondary" id="btn-historico-fechamento"><i class="fas fa-history"></i> Histórico</button>
+          </div>
+          <div id="fechamento-resumo" class="hidden">
+            <div class="dashboard-grid">
+              <div class="card">
+                <div class="card-header"><h3><i class="fas fa-cash-register"></i> Vendas do Dia</h3></div>
+                <div class="card-body" id="fecha-vendas"></div>
+              </div>
+              <div class="card">
+                <div class="card-header"><h3><i class="fas fa-warehouse"></i> Armazém</h3></div>
+                <div class="card-body" id="fecha-armazem"></div>
+              </div>
+              <div class="card">
+                <div class="card-header"><h3><i class="fas fa-exclamation-triangle"></i> Perdas</h3></div>
+                <div class="card-body" id="fecha-perdas"></div>
+              </div>
+              <div class="card">
+                <div class="card-header"><h3><i class="fas fa-shield-alt"></i> Roubos</h3></div>
+                <div class="card-body" id="fecha-roubos"></div>
+              </div>
+              <div class="card">
+                <div class="card-header"><h3><i class="fas fa-gas-pump"></i> Combustível</h3></div>
+                <div class="card-body" id="fecha-combustivel"></div>
+              </div>
+              <div class="card">
+                <div class="card-header"><h3><i class="fas fa-coins"></i> Caixa</h3></div>
+                <div class="card-body" id="fecha-caixa"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3><i class="fas fa-chart-bar"></i> Resumo Geral</h3></div>
+              <div class="card-body" id="fecha-resumo"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configurações -->
+        <div id="page-configuracoes" class="page">
+          <div class="page-header">
+            <h1>Configurações</h1>
+            <p>Configure o sistema e integração com Supabase</p>
+          </div>
+          <div class="dashboard-grid">
+            <div class="card">
+              <div class="card-header"><h3><i class="fas fa-database"></i> Supabase</h3></div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label>Supabase URL</label>
+                  <input type="text" id="config-supabase-url" class="form-input" placeholder="https://seu-projeto.supabase.co">
+                </div>
+                <div class="form-group">
+                  <label>Supabase Anon Key</label>
+                  <input type="text" id="config-supabase-key" class="form-input" placeholder="sua-anon-key">
+                </div>
+                <button class="btn btn-primary" id="btn-salvar-supabase"><i class="fas fa-save"></i> Salvar Configuração</button>
+                <button class="btn btn-secondary" id="btn-testar-supabase"><i class="fas fa-plug"></i> Testar Conexão</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3><i class="fas fa-cog"></i> Geral</h3></div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label>Nome da Loja</label>
+                  <input type="text" id="config-nome-loja" class="form-input" placeholder="Minha Loja">
+                </div>
+                <div class="form-group">
+                  <label>Estoque Mínimo Padrão</label>
+                  <input type="number" id="config-estoque-minimo" class="form-input" value="10">
+                </div>
+                <div class="form-group">
+                  <label>Alerta de Combustível (Litros)</label>
+                  <input type="number" id="config-alerta-combustivel" class="form-input" value="500">
+                </div>
+                <button class="btn btn-primary" id="btn-salvar-geral"><i class="fas fa-save"></i> Salvar</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3><i class="fas fa-trash"></i> Limpar Dados</h3></div>
+              <div class="card-body">
+                <p>Atenção: Estas ações são irreversíveis!</p>
+                <button class="btn btn-danger" id="btn-limpar-local"><i class="fas fa-trash"></i> Limpar Dados Locais</button>
+                <button class="btn btn-danger" id="btn-limpar-tudo"><i class="fas fa-exclamation-triangle"></i> Limpar Tudo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Modals -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Título</h3>
+        <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-spinner"></div>
+    <p id="loading-text">Carregando...</p>
+  </div>
+
+  <script src="formulas.js"></script>
+  <script src="supabase.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
