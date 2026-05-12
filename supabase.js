@@ -10,7 +10,7 @@ const SupabaseAPI = {
 
   // CONFIGURAÇÃO JÁ DEFINIDA
   config: {
-    url: 'https://xkckgzxtsiwoqqvopnkn.supabase.co',
+    url: 'https://wyesnptpaobrfepszrdk.supabase.co',
     key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5ZXNucHRwYW9icmZlcHN6cmRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0OTg4NjgsImV4cCI6MjA5NDA3NDg2OH0.X4oWiiSP66Wz2-ZI-fU-h9yodTp-LxlrZicEBd__pCQ'
   },
 
